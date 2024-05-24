@@ -1,101 +1,169 @@
+/*
+ * C++ Design Patterns: Builder
+ * Author: Jakub Vojvoda [github.com/JakubVojvoda]
+ * 2016
+ *
+ * Source code is licensed under MIT License
+ * (for more details see LICENSE)
+ *
+ */
+
 #include <iostream>
+#include <string>
 
 /*
- * Component
- * defines an interface for objects that can have responsibilities
- * added to them dynamically
+ * Product
+ * the final object that will be created using Builder
  */
-class Component
+class Product
 {
 public:
-  virtual ~Component() {}
+  void makeA( const std::string &part )
+  {
+    partA = part;
+  }
+  void makeB( const std::string &part )
+  {
+    partB = part;
+  }
+  void makeC( const std::string &part )
+  {
+    partC = part;
+  }
+  std::string get()
+  {
+    return (partA + " " + partB + " " + partC);
+  }
+  // ...
   
-  virtual void operation() = 0;
+private:
+  std::string partA;
+  std::string partB;
+  std::string partC;
   // ...
 };
 
 /*
- * Concrete Component
- * defines an object to which additional responsibilities
- * can be attached
+ * Builder
+ * abstract interface for creating products
  */
-class ConcreteComponent : public Component
+class Builder
 {
 public:
-  ~ConcreteComponent() {}
+  virtual ~Builder() {}
   
-  void operation() override
+  Product get()
   {
-    std::cout << "Concrete Component operation" << std::endl;
+    return product;
+  }
+  
+  virtual void buildPartA() = 0;
+  virtual void buildPartB() = 0;
+  virtual void buildPartC() = 0;
+  // ...
+
+protected:
+  Product product;
+};
+
+/*
+ * Concrete Builder X and Y
+ * create real products and stores them in the composite structure
+ */
+class ConcreteBuilderX : public Builder
+{
+public:
+  void buildPartA()
+  {
+    product.makeA( "A-X" );
+  }
+  void buildPartB()
+  {
+    product.makeB( "B-X" );
+  }
+  void buildPartC()
+  {
+    product.makeC( "C-X" );
+  }
+  // ...
+};
+
+class ConcreteBuilderY : public Builder
+{
+public:
+  void buildPartA()
+  {
+    product.makeA( "A-Y" );
+  }
+  void buildPartB()
+  {
+    product.makeB( "B-Y" );
+  }
+  void buildPartC()
+  {
+    product.makeC( "C-Y" );
   }
   // ...
 };
 
 /*
- * Decorator
- * maintains a reference to a Component object and defines an interface
- * that conforms to Component's interface
+ * Director
+ * responsible for managing the correct sequence of object creation
  */
-class Decorator : public Component
-{
+class Director {
 public:
-  ~Decorator() {}
+  Director() : builder() {}
   
-  Decorator( Component *c ) : component( c ) {}
-  
-  virtual void operation() override
+  ~Director()
   {
-    component->operation();
+    if ( builder )
+    {
+      delete builder;
+    }
+  }
+  
+  void set( Builder *b )
+  {
+    if ( builder )
+    {
+      delete builder;
+    }
+    builder = b;
+  }
+  
+  Product get()
+  {
+    return builder->get();
+  }
+  
+  void construct()
+  {
+    builder->buildPartA();
+    builder->buildPartB();
+    builder->buildPartC();
+    // ...
   }
   // ...
 
 private:
-  Component *component;
+  Builder *builder;
 };
 
-/*
- * Concrete Decorators
- * add responsibilities to the component (can extend the state
- * of the component)
- */
-class ConcreteDecoratorA : public Decorator
-{
-public:
-  ConcreteDecoratorA( Component *c ) : Decorator( c ) {}
-  
-  void operation() override
-  {
-    Decorator::operation();
-    std::cout << "Decorator A" << std::endl;
-  }
-  // ...
-};
-
-class ConcreteDecoratorB : public Decorator
-{
-public:
-  ConcreteDecoratorB( Component *c ) : Decorator( c ) {}
-  
-  void operation() override
-  {
-    Decorator::operation();
-    std::cout << "Decorator B" << std::endl;
-  }
-  // ...
-};
 
 int main()
 {
-  ConcreteComponent *c = new ConcreteComponent;
-  ConcreteDecoratorA *d1 = new ConcreteDecoratorA( c );
-  ConcreteDecoratorB *d2 = new ConcreteDecoratorB( d1 );
+  Director director;
+  director.set( new ConcreteBuilderX );
+  director.construct();
   
-  d2->operation();
+  Product product1 = director.get();
+  std::cout << "1st product parts: " << product1.get() << std::endl;
   
-  delete d2;
-  delete d1;
-  delete c;
+  director.set( new ConcreteBuilderY );
+  director.construct();
+  
+  Product product2 = director.get();
+  std::cout << "2nd product parts: " << product2.get() << std::endl;
   
   return 0;
 }
-
