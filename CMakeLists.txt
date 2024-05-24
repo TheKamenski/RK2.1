@@ -1,18 +1,16 @@
-cmake_minimum_required(VERSION 3.4)
-project(build1)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_executable(build1 Builder.cpp)
-target_link_libraries(build1)
+cmake_minimum_required(VERSION 3.10)
+project(Singleton)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Добавляем исполняемый файл для основного приложения
+add_executable(Singleton main.cpp Singleton.cpp)
+
+# Добавляем исполняемый файл для тестов
+add_executable(SingletonTest test.cpp Singleton.cpp)
+
+# Добавляем тесты с использованием CTest
 enable_testing()
-add_subdirectory(third-party/gtest)
-add_executable(check1 tests/test1.cpp)
-target_link_libraries(check1 gtest_main)
-add_executable(check2 tests/test2.cpp)
-target_link_libraries(check2 gtest_main)
-add_executable(check3 tests/test3.cpp)
-target_link_libraries(check3 gtest_main)
-add_test(NAME check1 COMMAND check1)
-add_test(NAME check2 COMMAND check2)
-add_test(NAME check3 COMMAND check3)
-include(CPackConfig.cmake)
+
+# Добавляем тестовый случай
+add_test(NAME SingletonTest COMMAND SingletonTest)
